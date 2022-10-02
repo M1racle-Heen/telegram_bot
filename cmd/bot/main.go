@@ -30,18 +30,8 @@ func main() {
 	updates := bot.GetUpdatesChan(u)
 
 	productService := product.NewService()
-
+	command := commands.NewCommander(bot, productService)
 	for update := range updates {
-		if update.Message != nil { // If we got a message
-			command := commands.NewCommander(bot, productService)
-			switch update.Message.Command() {
-			case "help":
-				command.Help(update.Message)
-			case "list":
-				command.List(update.Message)
-			default:
-				command.Default(update.Message)
-			}
-		}
+		command.HandleUpdate(update)
 	}
 }
