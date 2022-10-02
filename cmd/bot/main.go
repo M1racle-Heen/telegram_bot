@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 	"os"
-	"strings"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/joho/godotenv"
@@ -12,7 +11,6 @@ import (
 func main() {
 	godotenv.Load()
 	token := os.Getenv("TOKEN")
-	// 5797499341:AAEyTUebxUuyDqnqIHrS27DiHjzoq5WK2jI
 	bot, err := tgbotapi.NewBotAPI(token)
 
 	if err != nil {
@@ -26,23 +24,31 @@ func main() {
 	u := tgbotapi.UpdateConfig{
 		Timeout: 60,
 	}
-	// u.Timeout = 60
 
 	updates := bot.GetUpdatesChan(u)
 
 	for update := range updates {
 		if update.Message != nil { // If we got a message
-			log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
-			j := update.Message.From.UserName + " said " + update.Message.Text
-			ok := strings.Contains(j, "/exit")
-			if ok {
-				bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "You have exited chat"))
-				return
-			}
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, j)
-			// msg.ReplyToMessageID = update.Message.MessageID
 
-			bot.Send(msg)
+			switch update.Message.Command() {
+			case "help":
+				helpCommand(bot, update.Message)
+
+			default:
+				defaultBehavior(bot, update.Message)
+			}
 		}
 	}
+}
+
+func helpCommand(bot *tgbotapi.BotAPI, inputMessage *tgbotapi.Message) {
+	msg := tgbotapi.NewMessage(inputMessage.Chat.ID, "/help - help")
+	bot.Send(msg)
+}
+
+func defaultBehavior(bot *tgbotapi.BotAPI, inputMessage *tgbotapi.Message) {
+	log.Printf("[%s] %s", inputMessage.From.UserName, inputMessage.Text)
+
+	msg := tgbotapi.NewMessage(inputMessage.Chat.ID, "You wrote: "+inputMessage.Text)
+	bot.Send(msg)
 }
