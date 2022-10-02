@@ -6,6 +6,8 @@ import (
 	"github.com/M1racle-Heen/bot/internal/service/product"
 )
 
+var registeredCommands = map[string]func(c *Commander, msg *tgbotapi.Message){}
+
 type Commander struct {
 	bot            *tgbotapi.BotAPI
 	productService *product.Service
@@ -26,8 +28,4 @@ func (c *Commander) HandleUpdate(update tgbotapi.Update) {
 			c.Default(update.Message)
 		}
 	}
-}
-
-func String() string {
-	return ""
 }
